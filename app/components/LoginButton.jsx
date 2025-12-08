@@ -5,9 +5,10 @@ import { auth, provider } from '../firebase';
 export default function LoginButton() {
   const handleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
-     // const user = result.user;
-    //  console.log('User:', user.displayName, user.email);
+      const result = await signInWithPopup(auth, provider);     
+      const user = result.user;
+     //   console.log('User:', user.displayName, user.email);
+    //  console.log(user)
     } catch (err) {
       console.error('Login error:', err.message);
     }
@@ -16,8 +17,8 @@ export default function LoginButton() {
   return (
     <button
       onClick={handleLogin}
-      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    >Google Login
+      className='font-bold text-black text-2xl hover:text-blue-700 cursor-pointer'
+    >כניסה
     </button>
   );
 }

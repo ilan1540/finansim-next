@@ -15,8 +15,6 @@ import {
 import { db } from './firebase'
 //import moment from 'moment'
 
-
-
 // get timeStape from firebase
 export const getStamp = () => {
   try  {
@@ -33,7 +31,8 @@ export const readData = async (collName, set) => {
   const allData = await getDocs(collection(db, collName));
   allData.forEach((doc) => {
     data.push({...doc.data(), id:doc.id})
- })
+  })
+ // console.log(data)
     set(data)
 }
 
@@ -74,19 +73,32 @@ export const upDate = async (colName, id, rec) =>{
   }
 }
 
+// add one new doc
+export const addOneNewDoc = async (colName, rec,) => {
+  const collctionRef = collection(db, colName)
+  await addDoc(collctionRef, rec).then((docRef) => {
+    console.log('doc wrutgth with id', docRef.id)
+   // setHandelAdd('נקלט בהצלחה')
+   }).catch(((error) => {
+    console.error('err on doc:',error)
+   }))
+}
+
+
 // add rec
-export const addNewDoc = async (colName, rec, setHandelAdd) => {
+export const addNewDoc = async ( setHandelAdd) => {
   const collctionRef = collection(db, colName)
  // const createAt =  {'createAt':moment().format()}
  // const toSave = {...rec,createAt}
-  console.log(colName,rec )
+//  console.log(colName,rec )
   
   await addDoc(collctionRef, rec).then((docRef) => {
     console.log('doc wrutgth with id', docRef.id)
-    setHandelAdd('נקלט בהצלחה')
+   // setHandelAdd('נקלט בהצלחה')
    }).catch(((error) => {setHandelAdd(error)
     console.error('err on doc:',error)
-  }))
+   }))
+  
   /*
   try {
     await addDoc(collctionRef,rec)

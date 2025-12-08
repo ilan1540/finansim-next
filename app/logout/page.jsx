@@ -1,7 +1,6 @@
-import React from 'react'
-
+import LogoutButton from '../components/LogOutButton'
 export default function Logout() {
   return (
-    <div>Logout</div>
+    <div><LogoutButton /></div>
   )
 }
