@@ -5,7 +5,7 @@ import { getFirestore } from 'firebase/firestore'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCAiC0srFm_wT2BGq6FsLE2maBOLb_1nso",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: "finansim-70cb4.firebaseapp.com",
   databaseURL: "https://finansim-70cb4.firebaseio.com",
   projectId: "finansim-70cb4",

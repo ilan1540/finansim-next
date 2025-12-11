@@ -36,7 +36,7 @@ export default function BankLoader() {
         });
 
         setBank(data);
-        console.log("BANK LOADED", data[0]);
+      //  console.log("BANK LOADED", data[0]);
 
       } catch (error) {
         console.error("שגיאה טעינת bank:", error);

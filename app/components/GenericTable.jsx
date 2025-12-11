@@ -46,7 +46,7 @@ export default function GenericTable({ headers }) {
             enableSorting: false,
             cell: ({ row }) => (
               <Link
-                href={`/bank/${encodeURIComponent(row.original.peola)}`}
+                href={`/bank/${encodeURIComponent(row.original.id)}`}
                 className="hover:text-blue-600"
               >
                 ✏️

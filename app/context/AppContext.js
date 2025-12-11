@@ -107,7 +107,7 @@ useEffect(() => {
      setBank,
    bank: filteredBank,
     loadingBank, setLoadingBank,
-    selectedYear, setSelectedYear,git
+    selectedYear, setSelectedYear,
     csvFile, setCsvFile,
     message, setMessage,
   }

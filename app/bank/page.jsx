@@ -8,6 +8,7 @@ import { useAppContext } from "../context/AppContext";
 import GroupSummary from '../components/GroupSummary';
 import GenericTable from '../components/GenericTable';
 import YearFilter from './YearFilter';
+import UpdateByPeola from './UpdateByPeola';
 
 export default function BankLoader() {
   const [showAll, setShowAll] = useState(false); // show all rec
@@ -34,7 +35,6 @@ export default function BankLoader() {
   const header = [
   { key: "edit", label: "✏️", type: "action", link: "/edit" },
   { key: "date", label: "תאריך", type: "date" },
-  { key: "valueDate", label: "תאריך ערך", type: "date" },
   { key: "peola", label: "פעולה", type: "text" },
   { key: "sog", label: "סוג קבוצה", type: "text" },
 
@@ -99,9 +99,12 @@ export default function BankLoader() {
           </div>
         </div>
       </nav>
-      <YearFilter />
+      <UpdateByPeola />
       <GenericTable headers={header} />
-      <GroupSummary />
+     {/* <YearFilter />
+     <GenericTable headers={header} />
+      <GenericTable headers={header} />
+      <GroupSummary />*/}
     </>
   )
 }
