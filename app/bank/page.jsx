@@ -44,46 +44,7 @@ export default function BankLoader() {
 
   { key: "yitra", label: "יתרה", type: "number" }
 ];
-/*
-  useEffect(() => {
-    const loadBank = async () => {
-      try {
-        setLoadingBank(true);
 
-        const snap = await getDocs(collection(db, "bank"));
-
-        const data = snap.docs.map(doc => {
-          const r = doc.data();
-
-          return {
-            id: doc.id,
-
-            // ✅ התאמה לשמות האמיתיים ב־Firestore
-            date: r.date?.toDate?.() || null,
-            valueDate: r.valueDate?.toDate?.() || null,
-
-            peola: r.peola || "",
-            sog: r.sog || "",
-            yitra: Number(r.yitra || 0),
-
-            deabit: Number(r.deabit || 0),
-            creadit: Number(r.creadit || 0)
-          };
-        });
-        setBank(data);
-    //    console.log("BANK LOADED", data[0]); // הדפסת רשומה 0
-
-      } catch (error) {
-        console.error("שגיאה טעינת bank:", error);
-      } finally {
-        setLoadingBank(false);
-      }
-    };
-
-    loadBank();
-  }, []);
-
-*/
   return (
     <>
       <nav className="">
@@ -99,6 +60,8 @@ export default function BankLoader() {
           </div>
         </div>
       </nav>
+      <YearFilter />
+      <GroupSummary />
       <UpdateByPeola />
       <GenericTable headers={header} />
      {/* <YearFilter />

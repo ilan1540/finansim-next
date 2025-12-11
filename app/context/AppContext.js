@@ -111,7 +111,7 @@ useEffect(() => {
     csvFile, setCsvFile,
     message, setMessage,
   }
-
+console.log(bank)
   return (
     <AppContext.Provider value={value}>
       {children}
