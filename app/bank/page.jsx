@@ -1,74 +1,28 @@
 "use client";
 import Link from 'next/link';
-
 import React, {useEffect,useState } from "react";
-import { db } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
 import { useAppContext } from "../context/AppContext";
-import GroupSummary from '../components/GroupSummary';
-import GenericTable from '../components/GenericTable';
-import YearFilter from './YearFilter';
-import UpdateByPeola from './UpdateByPeola';
+import TopBar from './TopBar';
 
 export default function BankLoader() {
   const [showAll, setShowAll] = useState(false); // show all rec
   const [showFilter, setShowFilter] = useState(false); // show filterd rec
   const [editFilter, seteditFilter] = useState(false); // edit filterd rec
   const {bank, setBank, setLoadingBank } = useAppContext();
-
-
-  const navLink = [
-  {
-      href: `/bankLoader`,
-      name: 'כל הרשומות'
-    },
-    {
-      href: '/group',
-      name: 'הצג חלוקה לקבוצות'
-    },
-    {
-      href: '/edit',
-      name: 'עריכה'
-    },
-           
-  ]
+ /*
   const header = [
   { key: "edit", label: "✏️", type: "action", link: "/edit" },
-  { key: "date", label: "תאריך", type: "date" },
+    { key: "date", label: "תאריך", type: "date" },
+  { key: "group", label: " קבוצה", type: "text" },
   { key: "peola", label: "פעולה", type: "text" },
-  { key: "sog", label: "סוג קבוצה", type: "text" },
-
   // 🔥 חשוב: שמות כפי שהם ב־Firestore
   { key: "deabit", label: "חובה", type: "number", sum: true },
   { key: "creadit", label: "זכות", type: "number", sum: true },
-
   { key: "yitra", label: "יתרה", type: "number" }
 ];
-
+*/
   return (
-    <>
-      <nav className="">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-around p-3">    
-          <div className='shrink'>
-            
-          {/* Nav Links */}
-            <div className="flex font-bold text-black text-base bg-white p-1 rounded-3xl gap-4 ">
-              {navLink.map((i) => <Link href={i.href} key={i.href} className='hover:text-blue-700' >{i.name}</Link>)}
-              <p> מסםר רשומות {bank && bank.length }</p>
-            </div>
-            
-          </div>
-        </div>
-      </nav>
-      <YearFilter />
-      <GroupSummary />
-      <UpdateByPeola />
-      <GenericTable headers={header} />
-     {/* <YearFilter />
-     <GenericTable headers={header} />
-      <GenericTable headers={header} />
-      <GroupSummary />*/}
-    </>
+      <TopBar bank={bank} />
   )
 }
 

@@ -40,7 +40,7 @@ export default function RootLayout({ children }) {
         className={` ${frank.className}`}>
          <QueryProvider>
         <AppProvider>
-        <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800">
+        <div className="flex min-h-screen  flex-col bg-white dark:bg-gray-800">
        <header className=" px-2 shadow-lg bg-white dark:bg-gray-900 text-black dark:text-white">
        <Navbar />
         </header>
