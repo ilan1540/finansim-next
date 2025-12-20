@@ -5,6 +5,8 @@ import { AppProvider } from "./context/AppContext";
 import Navbar from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import QueryProvider from './QueryProvider';
+//import Navbar1 from "./components/Navbar1"; 
+
 
 
 
@@ -42,7 +44,8 @@ export default function RootLayout({ children }) {
         <AppProvider>
         <div className="flex min-h-screen  flex-col bg-white dark:bg-gray-800">
        <header className=" px-2 shadow-lg bg-white dark:bg-gray-900 text-black dark:text-white">
-       <Navbar />
+                <Navbar />
+                
         </header>
         <main className=" p-1">
           {children}

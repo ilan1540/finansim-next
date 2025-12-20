@@ -16,6 +16,10 @@ label { @apply  text-xl;
         @apply text-center;
         @apply text-black font-bold mb-1;
 }
+
+.nav-link {
+  @apply text-gray-700 hover:text-blue-600 font-medium transition;
+}
 /*
 .input {
 @apply  width: 100%;

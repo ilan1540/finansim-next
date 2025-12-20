@@ -3,7 +3,8 @@ import BankTable from "./BankTable";
 import GroupSummaryTable from "./GroupSummaryTable";
 import UpdateByPeola from './UpdateByPeola';
 import YearFilter from './YearFilter';
-
+import UploadCsvFile from "./UploadCsvFile";
+import Link from "next/link";
 export default function TopBar({ bank }) {
   const [active, setActive] = useState("table");
 
@@ -53,6 +54,23 @@ export default function TopBar({ bank }) {
           >
             עידכון קבוצה לפי סוג פעולה
           </button>
+          <button
+            onClick={() => setActive("upload")}
+            className={`px-4 py-2 mx-2 rounded-xl transition-all
+              ${active === "upload"
+                ? "bg-blue-600 text-white shadow"
+                : "bg-blue-200 hover:bg-blue-300"
+              }`}
+          >
+           קלט קובץ CSV 
+          </button>
+              <Link
+        href="/bank/uploadcsvfile"
+        className="px-4 py-2 mx-2 rounded-xl bg-green-500 text-white hover:bg-green-600 transition-all"
+      >
+        ייבוא CSV
+          </Link>
+          
 
         </div>
 
@@ -73,12 +91,18 @@ export default function TopBar({ bank }) {
             <GroupSummaryTable  bank={bank} />
           </div>
         )}
+        {active === "upload" && (
+          <div>    
+            <UploadCsvFile />
+          </div>
+        )}
 
         {active === "update" && (
           <div className="flex justify-center mx-3">    
             <UpdateByPeola /> 
           </div>
         )}
+      
       </div>
       </div>    
   );

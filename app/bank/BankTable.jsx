@@ -2,6 +2,9 @@
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useContext } from "react";
 import { useAppContext } from "../context/AppContext";
+import { useEffect } from "react";
+import GenericButton from "../components/GenericButton";
+
 
 const ALL_COLUMNS = {
   date: "תאריך",
@@ -14,9 +17,23 @@ const ALL_COLUMNS = {
 export default function BankTablePro() {
   const { bank } = useAppContext();
   const router = useRouter();
+  const [sort, setSort] = useState({ field: null, dir: "asc" });
+/*
+  useEffect(() => {
+  if (!bank || bank.length === 0) return;
+
+  bank.slice(0, 4).forEach((row, i) => {
+    console.log(
+      `Row ${i}`,
+      row.date,
+      "parsed:",
+      new Date(row.date)
+    );
+  });
+}, [bank]);
+*/
 
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({});
   const [visibleCols, setVisibleCols] = useState(ALL_COLUMNS);
 
   // פאג'ינציה
@@ -25,28 +42,39 @@ export default function BankTablePro() {
 
   /** ----------  סינון לפי ערכים + חיפוש  ------------------- **/
   const filtered = useMemo(() => {
-    let rows = bank || [];
+  let rows = bank || [];
 
-    // סינון לפי עמודה
-    Object.keys(filters).forEach((key) => {
-      if (filters[key])
-        rows = rows.filter((row) =>
-          String(row[key] || "").includes(filters[key])
-        );
+  if (search.trim() !== "") {
+    const s = search.trim();
+    rows = rows.filter((row) =>
+      Object.values(row).some((v) =>
+        String(v || "").includes(s)
+      )
+    );
+  }
+
+  if (sort.field) {
+    rows = [...rows].sort((a, b) => {
+      let av = a[sort.field];
+      let bv = b[sort.field];
+
+      if (sort.field === "date") {
+        av = av ? new Date(av) : 0;
+        bv = bv ? new Date(bv) : 0;
+      } else {
+        av = String(av || "");
+        bv = String(bv || "");
+      }
+
+      if (av < bv) return sort.dir === "asc" ? -1 : 1;
+      if (av > bv) return sort.dir === "asc" ? 1 : -1;
+      return 0;
     });
+  }
 
-    // חיפוש חופשי
-    if (search.trim() !== "") {
-      rows = rows.filter((row) =>
-        Object.values(row).some((v) =>
-          String(v || "").includes(search.trim())
-        )
-      );
-    }
-
-    return rows;
-  }, [bank, search, filters]);
-
+  return rows;
+}, [bank, search, sort]);
+ 
   /** ----------   חלוקה לעמודים   ------------------- **/
   const paged = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -67,31 +95,49 @@ export default function BankTablePro() {
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-4">
-        
-        {/* חיפוש */}
+        <div className="flex gap-4">
+
+  <button
+    className="px-3 py-1 bg-blue-400 rounded-full hover:bg-blue-500 text-xl"
+    onClick={() =>
+      setSort({ field: "date", dir: sort.dir === "asc" ? "desc" : "asc" })
+    }
+  >
+    מיון תאריך {sort.field === "date" ? (sort.dir === "asc" ? "↑" : "↓") : ""}
+  </button>
+
+  <button
+    className="px-3 py-1 bg-blue-400 rounded-full hover:bg-blue-500 text-xl"
+    onClick={() =>
+      setSort({ field: "peola", dir: sort.dir === "asc" ? "desc" : "asc" })
+    }
+  >
+    מיון פעולה {sort.field === "peola" ? (sort.dir === "asc" ? "↑" : "↓") : ""}
+  </button>
+ {/* חיפוש */}
         <input
           className="border p-2 rounded-lg w-60"
           placeholder="חיפוש..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-        />
+          />
+          <GenericButton
+           label="הבא"
+            onClick={() => setPage(p => p + 1)} />
+          <GenericButton action="back" label="חזור" />
+          <GenericButton action="last" label="סוף" onClick={()=>setPage(totalPages)} />
+
+</div>
+
+        
+       
 
         {/* נראות עמודות */}
         <div className="flex gap-3 mx-auto">
           <label>טבלת תנועות בנק</label>
           {Object.keys(ALL_COLUMNS).map((col) => (
             <label key={col} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={visibleCols[col]}
-                onChange={() =>
-                  setVisibleCols((prev) => ({
-                    ...prev,
-                    [col]: !prev[col],
-                  }))
-                }
-              />
-              
+
               {ALL_COLUMNS[col]}
             </label>
           ))}
@@ -110,19 +156,7 @@ export default function BankTablePro() {
                 ([key, label]) =>
                   visibleCols[key] && (
                     <th key={key} className="p-2 border">
-                      {label}
-
-                      {/* פילטר */}
-                      <input
-                        className="border rounded p-1 w-full mt-1 text-xs"
-                        placeholder={`סינון ${label}`}
-                        onChange={(e) =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            [key]: e.target.value,
-                          }))
-                        }
-                      />
+                      {label}            
                     </th>
                   )
               )}
@@ -134,7 +168,7 @@ export default function BankTablePro() {
             {paged.map((row, idx) => (
               <tr key={idx} 
                  onClick={() => router.push(`/bank/${row.id}`)}
-              className="cursor-pointer hover:bg-blue-50 transition">
+              className="cursor-pointer text-xl hover:bg-blue-50 transition">
 
                 {visibleCols.date && (
                   <td className="p-2 border">
@@ -190,31 +224,6 @@ export default function BankTablePro() {
           הבא →
         </button>
       </div>
-
-      {/* סיכומים מבטל הצגת סיכומים 
-      <div className="mt-6 p-4 bg-gray-100 rounded-lg shadow">
-        <h3 className="text-lg font-bold mb-3">📌 סיכום נתונים (לפי סינון נוכחי)</h3>
-
-        <div className="grid grid-cols-3 gap-4 text-center">
-
-          <div className="bg-white p-3 rounded shadow">
-            <p className="font-bold">סה״כ חובה</p>
-            <p className="text-red-600 text-xl">{formatNumber(sum("deabit"))}</p>
-          </div>
-
-          <div className="bg-white p-3 rounded shadow">
-            <p className="font-bold">סה״כ זכות</p>
-            <p className="text-green-700 text-xl">{formatNumber(sum("creadit"))}</p>
-          </div>
-
-          <div className="bg-white p-3 rounded shadow">
-            <p className="font-bold">מספר רשומות</p>
-            <p className="text-xl">{filtered.length}</p>
-          </div>
-
-        </div>
-      </div>
-*/}
     </div>
   );
 }

@@ -1,17 +1,19 @@
 "use client";
 import { useState } from 'react';
 import Link from 'next/link';
-//import Image from 'next/image';
-//import logo from './logo.svg'
 import { useAppContext } from '../context/AppContext';
-//import { auth } from '../firebase';
 import GoogleLoginButton from './GoogleLoginButton';
 import LoginButton from './LoginButton';
 import LogoutButton from './LogOutButton';
+import { Menu, X } from "lucide-react";
+import NavDropdown from "./NavDropDown";
+
+
 
 export default function Navbar() {
  const {user} = useAppContext()
   const [open, setOpen] = useState(false);
+  
 
   const navLink = [
   {
@@ -26,10 +28,7 @@ export default function Navbar() {
       href: '/kelet',
       name: 'קלט'
     },
-    {
-      href: '/bank',
-      name: 'בנקים'
-    },
+    
 {
       href: '/asset',
       name: 'נכסים'
@@ -58,9 +57,12 @@ export default function Navbar() {
           {/* Nav Links */}
         {user ?(<div className="flex font-bold text-black text-base bg-white p-1 rounded-3xl gap-4 ">
           {navLink.map((l) =>
-            <Link href={l.href} key={l.href} className=" hover:text-blue-700">{l.name }</Link>)}
+            <Link href={l.href} key={l.href} className=" hover:text-blue-700">{l.name}</Link>)}
+            <NavDropdown />
+
         </div>):(null)}
         </div>
+        
         <div className='w-25 flex-none'>
           {/* Logo centered on mobile, left on desktop */}
         <Link href="/" className="flex items-center gap-2 mb-2 md:mb-0">

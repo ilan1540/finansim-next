@@ -4,15 +4,25 @@ import React, {useEffect,useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import TopBar from './TopBar';
 
+
 export default function BankLoader() {
   const [showAll, setShowAll] = useState(false); // show all rec
   const [showFilter, setShowFilter] = useState(false); // show filterd rec
   const [editFilter, seteditFilter] = useState(false); // edit filterd rec
   const {bank, setBank, setLoadingBank } = useAppContext();
- /*
+ 
+  return (
+    <>
+    <TopBar bank={bank} />
+      
+      </>
+  )
+}
+
+/*
   const header = [
   { key: "edit", label: "✏️", type: "action", link: "/edit" },
-    { key: "date", label: "תאריך", type: "date" },
+  { key: "date", label: "תאריך", type: "date" },
   { key: "group", label: " קבוצה", type: "text" },
   { key: "peola", label: "פעולה", type: "text" },
   // 🔥 חשוב: שמות כפי שהם ב־Firestore
@@ -21,12 +31,6 @@ export default function BankLoader() {
   { key: "yitra", label: "יתרה", type: "number" }
 ];
 */
-  return (
-      <TopBar bank={bank} />
-  )
-}
-
-
 
 /*
 import React, {useEffect, useState } from "react";

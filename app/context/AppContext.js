@@ -1,8 +1,8 @@
 'use client'; 
 import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
-
+import { sortByField } from './globalFunc';
 import { auth,db } from '../firebase';
-import { collection, getDocs } from "firebase/firestore";
+import { collection, query ,onSnapshot } from "firebase/firestore";
 import {signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
@@ -47,21 +47,26 @@ useEffect(() => {
 }, []);
   
   /* קריאה BANK מ־Firestore */
-  useEffect(() => {
-    const load = async () => {
-      const snap = await getDocs(collection(db, "bank"));
-      const data = snap.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        date: doc.data().date?.toDate?.() || null
-      }));
+useEffect(() => {
+  const q = query(
+    collection(db, "bank"),
+  //  orderBy("date", "desc")
+  );
 
-      setBank(data);
-      setLoadingBank(false);
-    };
+  const unsub = onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      date: doc.data().date?.toDate?.() || null   
+    }));
+    const sortedData = sortByField(data, "date", "desc");
+    setBank(sortedData);
+    setLoadingBank(false);
+  });
 
-    load();
-  }, []);
+  return () => unsub();
+}, []);
+
 
    /* פילטר לפי שנה */
   const filteredBank = useMemo(() => {
@@ -98,6 +103,15 @@ useEffect(() => {
     console.error('שגיאה בהתנתקות:', err);
   }
   };
+// עדכון שורה ב-BANK וחזרה לדף ראשי
+  const updateBankRow = (id, updatedFields) => {
+  setBank(prev =>
+    prev.map(row =>
+      row.id === id ? { ...row, ...updatedFields } : row
+    )
+  );
+};
+
   const value = {
     user,setUser,
     logout,
@@ -105,13 +119,14 @@ useEffect(() => {
     data,setData,   
     year, setYear,
      setBank,
-   bank: filteredBank,
+    bank: filteredBank,
+   updateBankRow,
     loadingBank, setLoadingBank,
     selectedYear, setSelectedYear,
     csvFile, setCsvFile,
     message, setMessage,
   }
-
+//console.log('AppContext user:', bank  );
   return (
     <AppContext.Provider value={value}>
       {children}

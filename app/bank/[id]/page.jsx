@@ -1,194 +1,124 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  getDoc,
-  doc,
-} from "firebase/firestore";
+import { useMemo, useState } from "react";
+import { useAppContext } from "../../context/AppContext";
+import { doc, writeBatch } from "firebase/firestore";
+import { db } from "../../firebase";
 
-import { db } from "../../firebase";  
-import moment from "moment";
-import { data } from "autoprefixer";
+export default function BulkEditBank() {
+  const { bank } = useAppContext();
 
-export default function BankEditPage() {
-  const { id } = useParams();
-  const router = useRouter();
+  const [selectedPeola, setSelectedPeola] = useState("");
+  const [newGroup, setNewGroup] = useState("");
+  const [newPratim, setNewPratim] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [result, setResults] = useState(null);
-  const [rows, setRows] = useState([]);
+  /* --- רשימת פעולות ייחודיות --- */
+  const peolaList = useMemo(() => {
+    if (!bank) return [];
+    return [...new Set(bank.map(r => r.peola).filter(Boolean))];
+  }, [bank]);
 
-  // --- טעינת נתון
-  useEffect(() => {
-  const loadData = async () => {
-    const ref = doc(db, "bank", id);
-    const snap = await getDoc(ref);   // ✅ getDoc
+  /* --- רשומות מסוננות --- */
+  const filtered = useMemo(() => {
+    if (!selectedPeola) return [];
+    return bank.filter(r => r.peola === selectedPeola);
+  }, [bank, selectedPeola]);
 
-    if (snap.exists()) {
-      const data = snap.data();
-
-      setForm({
-        ...data,
-        date: data.date?.toDate?.() || "",
-        valueDate: data.valueDate?.toDate?.() || ""
-      });
-
-      setResults({ id: snap.id, ...data }); // ✅ גם id אם צריך
+  /* --- שמירה --- */
+  const handleSave = async () => {
+    if (!filtered.length) return alert("אין רשומות לעדכון");
+    if (!newGroup && !newPratim) {
+      return alert("יש לבחור ערך לעדכון");
     }
 
-    setLoading(false);
+    try {
+      setSaving(true);
+      const batch = writeBatch(db);
+
+      filtered.forEach(row => {
+        const ref = doc(db, "bank", row.id);
+        const updateData = {};
+
+        if (newGroup) updateData.group = newGroup;
+        if (newPratim) updateData.pratim = newPratim;
+
+        batch.update(ref, updateData);
+      });
+
+      await batch.commit();
+      alert(`עודכנו ${filtered.length} רשומות בהצלחה`);
+    } catch (err) {
+      console.error(err);
+      alert("שגיאה בשמירה");
+    } finally {
+      setSaving(false);
+    }
   };
-
-  loadData();
-}, [id]);
-
-
-// קריאה קבוצתית
-useEffect(() => {
-  if (!result?.peola) return;
-
-  const load = async () => {
-    const q = query(
-      collection(db, "bank"),
-      where("peola", "==", result.peola)
-    );
-
-    const snapshot = await getDocs(q);
-
-    const data = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    setRows(data);
-    setLoading(false);
-  };
-
-  load();
-}, [result?.peola]);
-
-
-
-console.log(rows)
-console.log(result&& result.peola)  // --- שינוי
-console.log(result ) 
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // --- שמירה
-  const handleSave = async () => {
-    const ref = doc(db, "bank", id);
-
-    const payload = {
-      ...form,
-      date: moment(form.date).toDate(),
-      valueDate: moment(form.valueDate).toDate(),
-      deabit: Number(form.deabit || 0),
-      creadit: Number(form.creadit || 0),
-      yitra: Number(form.yitra || 0)
-    };
-
-    await updateDoc(ref, payload);
-
-    alert("✅ נתונים נשמרו");
-    router.push("/bank");
-  };
-
-  if (loading) return <p>טוען נתונים...</p>;
-  if (!form) return <p>רשומה לא נמצאה</p>;
 
   return (
-    <div className="max-w-lg mx-auto p-4 space-y-3">
-      
-      <h2 className="text-xl font-bold">✏️ עריכת פעולה</h2>
-      <label>תאריך</label>
-      <input
-        type="date"
-        name="date"
-        value={moment(form.date).format("YYYY-MM-DD")}
-        onChange={handleChange}
-        className="border p-2 w-full"
-      />
+    <div className="p-6 max-w-3xl mx-auto space-y-6">
 
-      <label>תאריך ערך</label>
-      <input
-        type="date"
-        name="valueDate"
-        value={moment(form.valueDate).format("YYYY-MM-DD")}
-        onChange={handleChange}
-        className="border p-2 w-full"
-      />
+      <h2 className="text-xl font-bold text-center">
+        Bulk Edit – עדכון רשומות בנק
+      </h2>
 
-      <label>פעולה</label>
-      <input
-        name="peola"
-        value={form.peola || ""}
-        onChange={handleChange}
-        className="border p-2 w-full"
-      />
-
-      <label>סוג קבוצה</label>
-      <input
-        name="sog"
-        value={form.sog || ""}
-        onChange={handleChange}
-        className="border p-2 w-full"
-      />
-
-      <label>חובה</label>
-      <input
-        name="deabit"
-        type="number"
-        value={form.deabit || ""}
-        onChange={handleChange}
-        className="border p-2 w-full"
-      />
-
-      <label>זכות</label>
-      <input
-        name="creadit"
-        type="number"
-        value={form.creadit || ""}
-        onChange={handleChange}
-        className="border p-2 w-full"
-      />
-
-      <label>יתרה</label>
-      <input
-        name="yitra"
-        type="number"
-        value={form.yitra || ""}
-        onChange={handleChange}
-        className="border p-2 w-full"
-      />
-
-      <div className="flex gap-4 pt-3">
-        <button
-          onClick={handleSave}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+      {/* --- בחירת פעולה --- */}
+      <div>
+        <label className="block font-semibold mb-1">בחר סוג פעולה (peola)</label>
+        <select
+          value={selectedPeola}
+          onChange={e => setSelectedPeola(e.target.value)}
+          className="w-full border rounded p-2"
         >
-          שמור
-        </button>
-
-        <button
-          onClick={() => router.push("/bank")}
-          className="bg-gray-400 text-white px-4 py-2 rounded"
-        >
-          ביטול
-        </button>
+          <option value="">-- בחר פעולה --</option>
+          {peolaList.map(p => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
       </div>
 
+      {/* --- עדכון קבוצה --- */}
+      <div>
+        <label className="block font-semibold mb-1">עדכן GROUP (אופציונלי)</label>
+        <input
+          value={newGroup}
+          onChange={e => setNewGroup(e.target.value)}
+          className="w-full border rounded p-2"
+          placeholder="לדוגמה: הוצאות קבועות"
+        />
+      </div>
+
+      {/* --- עדכון פרטים --- */}
+      <div>
+        <label className="block font-semibold mb-1">עדכן PRATIM (אופציונלי)</label>
+        <input
+          value={newPratim}
+          onChange={e => setNewPratim(e.target.value)}
+          className="w-full border rounded p-2"
+          placeholder="טקסט חדש לשדה pratim"
+        />
+      </div>
+
+      {/* --- סיכום --- */}
+      <div className="bg-blue-50 border rounded p-4">
+        <p>מספר רשומות מסוננות: <b>{filtered.length}</b></p>
+        {filtered.length > 0 && (
+          <p className="text-sm text-gray-600">
+            כל הרשומות עם פעולה: <b>{selectedPeola}</b>
+          </p>
+        )}
+      </div>
+
+      {/* --- כפתור שמירה --- */}
+      <button
+        disabled={saving || !filtered.length}
+        onClick={handleSave}
+        className="w-full bg-blue-600 text-white py-3 rounded-xl
+                   hover:bg-blue-700 disabled:opacity-40"
+      >
+        {saving ? "שומר..." : "עדכן רשומות"}
+      </button>
     </div>
   );
 }

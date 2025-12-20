@@ -18,7 +18,7 @@ const formatNumber = n =>
     maximumFractionDigits: 2
   }).format(Number(n || 0));
 
-/* פורמט תאריך */
+/* פורמט תאריך */ 
 const formatDate = d => {
   if (!d) return "";
   const t = new Date(d);
@@ -27,10 +27,10 @@ const formatDate = d => {
   ).padStart(2, "0")}-${t.getFullYear()}`;
 };
 
-export default function GenericTable({ headers }) {
+export default function GenericTable({data, headers }) {
 
   const { bank, loadingBank } = useAppContext();
-  const data = bank || [];
+ // const data = bank || [];
 
   const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -78,8 +78,62 @@ export default function GenericTable({ headers }) {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel()
+    getPaginationRowModel: getPaginationRowModel(),
+    // מצב התחלתי
+    initialState: {
+      pagination: {
+        pageIndex: 0,
+        pageSize: 15,
+      },
+    },
   });
+
+  /* ניווט בין עמודים */
+  const nivotButton = (
+    <div className="flex items-center justify-between mt-2">
+      <div className="flex items-center justify-center gap-2">
+
+        <button
+          onClick={() => table.setPageIndex(0)}
+          disabled={!table.getCanPreviousPage()}
+          className="btn"
+        >
+          ⏭️ ראשון
+        </button>
+
+        <button
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+          className="btn"
+        >
+           ▶️קודם
+        </button>
+
+        <span className="px-3">
+          עמוד {table.getState().pagination.pageIndex + 1}
+          {" / "}
+          {table.getPageCount()}
+        </span>
+
+        <button
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+          className="btn"
+        >
+         ◀️ הבא 
+        </button>
+
+        <button
+          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+          disabled={!table.getCanNextPage()}
+          className="btn"
+        >
+           אחרון⏮️
+        </button>
+      </div>
+    </div>
+  );  
+
 
   /* סיכומים רק על המסונן */
   const totals = useMemo(() => {
@@ -102,14 +156,15 @@ export default function GenericTable({ headers }) {
 
   return (
     <div>
-
+<div className="mb-2 flex justify-center gap-10 p-2 text-2xl  ">  
       <input
         value={globalFilter}
         onChange={e => setGlobalFilter(e.target.value)}
         placeholder="חיפוש"
-        className="border p-1 mb-2 rounded"
+        className="border p-1 mt-1 rounded "
       />
-
+        {nivotButton}
+      </div>
       <table className="min-w-full border" dir="rtl">
 
         <thead className="bg-gray-200">
