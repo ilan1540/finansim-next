@@ -2,30 +2,45 @@
 
 import { useAppContext } from "../context/AppContext";
 import { useState, useMemo } from "react";
-import { writeBatch, doc } from "firebase/firestore";
+import { writeBatch, doc,setDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import moment from "moment";
 
 export default function EditByGroup() {
-  const { bank } = useAppContext();
+  const { bank, bankGroup } = useAppContext();
   const [group, setGroup] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [selectedPeola, setSelectedPeola] = useState(""); 
+  const [filteredBank, setFilteredBank] = useState([]);
 
   // --- מספר רשומות
   const count = bank?.length || 0;
+ // console.log("EditByGroup - bank count:", count);
+// --- סינון לפי פעולה
+  const filterRecToUpdate = useMemo(() => {
+  if (!selectedPeola) return bank || [];
+
+  return setFilteredBank( bank.filter(row => row.peola === selectedPeola));
+}, [bank, selectedPeola]);
+
+ console.log("Filtered Bank:", filteredBank.slice(0, 5)); // הצגת 10 רשומות ראשונות בלבד לבדיקה
 
   // --- peola ייחודי מתוך הסינון
-  const peola = useMemo(() => {
-    const set = new Set(bank && bank.map(b => b.peola));
-    return [...set].join(", ");
-  }, [bank]);
+  const peolaList = useMemo(() => {
+  if (!bank) return [];
 
+  return [...new Set(bank.map(b => b.peola).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "he"));
+  }, [bank]);
+  
   // --- עדכון קבוצתי ב־Firestore
   const updateGroup = async () => {
     if (!group) {
       alert("יש לבחור קבוצה");
       return;
     }
+    if (!filteredBank) {alert("אין רשומות לעדכון"); return;} 
 
     setLoading(true);
     setMessage("");
@@ -33,14 +48,14 @@ export default function EditByGroup() {
     try {
       const batch = writeBatch(db);
 
-      bank.forEach(row => {
+      filteredBank.forEach(row => {
         const ref = doc(db, "bank", row.id);
         batch.update(ref, { group: group });
       });
 
       await batch.commit();
 
-      setMessage(`✅ עודכנו ${count} רשומות בהצלחה`);
+      setMessage(`✅ עודכנו ${filteredBank.length} רשומות בהצלחה`);
     } catch (err) {
       console.error(err);
       setMessage("❌ שגיאה בעדכון הנתונים");
@@ -51,20 +66,34 @@ export default function EditByGroup() {
 
   if (!count) return null; // אין סינון – לא מציג טופס
   // group list
-  const groupList = [
-    'בריאות מכבי',
-    "קיצבה מכלל",
-    "הדס מנורה",
-    "הדס איכילוב",
-    "אילן שכר מקובי",
-    "קיצבה ביטוחמ לאומי",
-    "שכר דירה",
-    "חיוב מכרטיסי אשראי"
-  ]
+  const groupList = bankGroup;
 
+  const updateGroupHandler = () => async () => {
+try {
+    console.log(groupList);
 
-  return (
-    <div className="border rounded p-4 shadow bg-white max-w-md mt-4">
+    await setDoc(
+      doc(db, "setting", "bankgroup"),
+      { groupList },
+      { merge: true } // חשוב – לא מוחק שדות אחרים
+    );
+
+    console.log("group created");
+  } catch (err) {
+    console.error("שגיאה בעדכון group:", err);
+  }
+
+  }
+  console.log("banjkGroup:", bankGroup);
+      return (
+    <div>
+      <div className=" flex font-bold mb-4">
+  
+      <div className="mt-4 border rounded p-4 shadow bg-white max-w-2xl">
+        <h3 className="font-bold mb-2">עדכון וטיפול ברשומות קבוצה Group:</h3> 
+         <button onClick={updateGroupHandler()}  >שמור Firestor</button>
+          </div>
+ <div className="border rounded mx-auto p-4 shadow bg-white max-w-md mt-4">
 
       <h2 className="font-bold mb-3 text-lg">🗂 שיוך קבוצתי</h2>
 
@@ -75,11 +104,26 @@ export default function EditByGroup() {
       </div>
 
       {/* שורה 2 – peola */}
-      <div className="mb-2">
+      <div className="mb-2  ">
         <span className="font-semibold">🔍 פעולה:</span>{" "}
-        <span className="text-blue-600">{peola || "לא נבחר"}</span>
+        
       </div>
+      <div className="mb-4 flex gap-2">
+  <select
+  value={selectedPeola}
+  onChange={(e) => setSelectedPeola(e.target.value)}
+  className="border rounded px-2 py-1"
+>
+  <option value="">— כל הפעולות —</option>
 
+  {peolaList.map(p => (
+    <option key={p} value={p}>{p}</option>
+  ))}
+        </select>
+        <p>מספר רשומות שנבחרו: {filteredBank.length}</p>
+</div>
+        
+      
       {/* שורה 3 – בחירת קבוצה */}
       <div className="mb-3">
         <label className="block mb-1 font-semibold">🏷 בחר קבוצה</label>
@@ -108,6 +152,46 @@ export default function EditByGroup() {
       {message && (
         <div className="mt-3 text-center font-medium">{message}</div>
       )}
+      
+
+      </div>
+      </div>
+     
+      
+      
+// הצגה של רשומות מסוננות
+      <div className="mt-4">
+        <h3 className="font-bold mb-2">רשומות מסוננות:</h3> 
+        {filteredBank.length === 0 ? (
+          <p>אין רשומות להצגה.</p>
+        ) : (<div className="overflow-x-auto">
+          <table className="min-w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 px-2 py-1">תאריך</th>
+                <th className="border border-gray-300 px-2 py-1">חובה</th>
+                  <th className="border border-gray-300 px-2 py-1">זכות</th>
+                  <th className="border border-gray-300 px-2 py-1">פעולה</th>
+                <th className="border border-gray-300 px-2 py-1">קבוצה</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBank.map(row => (
+                <tr key={row.id}>
+                  <td className="border border-gray-300 px-2 py-1">{moment(row.date).format("DD/MM/YYYY")}</td>
+                  <td className="border border-gray-300 px-2 py-1">{row.deabit}</td>
+                  <td className="border border-gray-300 px-2 py-1">{row.creadit}</td>
+                  <td className="border border-gray-300 px-2 py-1">{row.peola}</td>
+                  <td className="border border-gray-300 px-2 py-1">{row.group}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>  
+        </div>)}
+
     </div>
+      
+  </div>    
+    
   );
 }

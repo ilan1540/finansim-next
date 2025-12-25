@@ -37,3 +37,29 @@ export function sortByField(data, field, direction = "asc") {
     }) * dir;
   });
 }
+
+/** טיפול בתאריכים */
+
+/* פורמט מספר */
+export function formatNumber(n) {         
+  new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number(n || 0));
+}
+
+export function numberWithCommas(x) {
+  x= Number(x)
+  var parts = x.toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+}
+
+/* פורמט תאריך */
+export function formatDate(d) {
+    if (!d) return "";
+  const t = new Date(d);
+  return `${String(t.getDate()).padStart(2, "0")}-${String(
+    t.getMonth() + 1
+  ).padStart(2, "0")}-${t.getFullYear()}`;
+};

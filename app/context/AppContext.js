@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { sortByField } from './globalFunc';
 import { auth,db } from '../firebase';
-import { collection, query ,onSnapshot } from "firebase/firestore";
+import { collection, query ,onSnapshot,getDoc } from "firebase/firestore";
 import {signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
@@ -11,6 +11,7 @@ import {signInWithEmailAndPassword,
 } from 'firebase/auth'
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
+import { set } from 'react-hook-form';
 //import { set } from 'react-hook-form';
 
 
@@ -22,6 +23,7 @@ export function AppProvider({ children }) {
   const [gemel, setGemel] = useState(null)
   const [data, setData] = useState([]);
   const [bank, setBank] = useState([]);
+  const [bankGroup, setBankGroup] = useState([]); 
   const [loadingBank, setLoadingBank] = useState(false);
   const [selectedYear, setSelectedYear] = useState("ALL");
   const [year, setYear] = useState(moment().year())
@@ -66,6 +68,27 @@ useEffect(() => {
 
   return () => unsub();
 }, []);
+  
+ /* קריאה BANKGROUP מ־Firestore */
+const fetchGroupList = async () => {
+  try {
+    const ref = doc(db, "setting", "bankgroup");
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      const data = snap.data();
+      console.log("groupList:", data);
+      return data.groupList || [];
+    } else {
+      console.log("document not found");
+      return [];
+    }
+  } catch (err) {
+    console.error("שגיאה בקריאה:", err);
+    return [];
+  }
+};
+  
 
 
    /* פילטר לפי שנה */
@@ -120,7 +143,8 @@ useEffect(() => {
     year, setYear,
      setBank,
     bank: filteredBank,
-   updateBankRow,
+    updateBankRow,
+    bankGroup, setBankGroup,
     loadingBank, setLoadingBank,
     selectedYear, setSelectedYear,
     csvFile, setCsvFile,

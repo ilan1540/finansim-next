@@ -27,8 +27,9 @@ export default function NavDropdown() {
 
   const items = [
    { label: " תנועות בנק", href: "/bank/banktable" },
-    { label: "עדכון לפי קבוצה", href: "/bank/EditByGroup" },
-   { label: "ייבוא CSV", href: "/bank/uploadcsvfile" },
+    { label: "עדכון לפי קבוצה", href: "/bank/editbygroup" },
+    { label: "ייבוא CSV", href: "/bank/uploadcsvfile" },
+   { label: " קבוצה", href: "/bank/groupupdate" },
   ]; 
 
   return (

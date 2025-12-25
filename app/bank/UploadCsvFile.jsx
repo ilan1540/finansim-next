@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import BackButton from "../components/BackButton";
+
+
+
 
 const BANK_FIELDS = [
   { key: "date", label: "תאריך", type: "date", required: true },
@@ -147,7 +151,7 @@ export default function UploadCsvFileValidated() {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <h2 className="text-xl font-bold text-center">ייבוא נתוני בנק מ־CSV</h2>
-
+      <BackButton href="/bank" />
       <input type="file" accept=".csv" onChange={(e) => handleFile(e.target.files[0])} />
 
       {csvHeaders.length > 0 && (
